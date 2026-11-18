@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="月次タスク">
+<meta name="robots" content="noindex">
+<title>月次タスク</title>
+<style>
+:root{--task:#2f74d0;--bocs:#8a3ffc;--mail:#0b8fac;--danger:#d33a3a;--warn:#c77700;--ok:#1f8a4c;--line:#e2e6ee;--muted:#6b7385;--bg:#f4f6fa;--brand:#0b4ea2}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif;background:var(--bg);color:#1d2433;font-size:15px;-webkit-text-size-adjust:100%;padding-bottom:90px}
+header{position:sticky;top:0;background:var(--brand);color:#fff;padding:12px 14px 10px;z-index:5}
+header h1{margin:0;font-size:17px;display:flex;align-items:center;gap:8px}
+header .sub{font-size:11px;opacity:.85;margin-top:3px}
+header button{margin-left:auto;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 10px;font-size:13px}
+.card{margin:10px 10px 0;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.prog-top{display:flex;align-items:baseline;gap:8px}
+.prog-top b{font-size:28px}
+.prog-top span{color:var(--muted);font-size:13px}
+.prog-top .sw{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.prog-top .sw button{border:0;background:#fff;font-size:11px;padding:4px 9px;color:#1d2433}
+.prog-top .sw button.on{background:var(--brand);color:#fff}
+.bar{height:12px;background:#eef1f6;border-radius:6px;overflow:hidden;display:flex;margin:8px 0 4px}
+.bar i{display:block;height:100%}
+.bar .d{background:var(--ok)} .bar .s{background:#a8b3c7}
+.legend{font-size:11px;color:var(--muted);display:flex;gap:10px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:3px}
+.rows{margin-top:10px}
+.prow{display:grid;grid-template-columns:72px 1fr 54px;gap:8px;align-items:center;font-size:12px;margin:5px 0}
+.prow .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.prow .bar{height:8px;margin:0}
+.prow .n{text-align:right;color:var(--muted)}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 10px 0}
+.sum div{background:#fff;border-radius:10px;padding:7px 4px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);border-top:4px solid var(--line)}
+.sum b{display:block;font-size:20px}
+.sum span{font-size:11px;color:var(--muted)}
+.sum .o{border-color:var(--danger)} .sum .o b{color:var(--danger)}
+.sum .t{border-color:var(--warn)} .sum .t b{color:var(--warn)}
+.sum .m{border-color:#d4b200} .sum .r{border-color:var(--brand)}
+.tabs{display:flex;gap:5px;padding:10px 10px 6px;overflow-x:auto}
+.tabs button{flex:1;white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 8px;font-size:13px;font-weight:600;color:#1d2433}
+.tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.filters{display:flex;gap:6px;padding:0 10px 4px;flex-wrap:wrap;align-items:center}
+.filters label{font-size:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 9px;display:flex;gap:4px;align-items:center}
+.filters select{font-size:12px;border:1px solid var(--line);border-radius:14px;padding:4px 8px;background:#fff}
+.sec{margin:8px 10px 0;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.sec h2{margin:0;font-size:13px;padding:8px 12px;background:#fafbfd;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+.it{display:flex;gap:8px;align-items:center;padding:10px 10px 10px 12px;border-bottom:1px solid var(--line);border-left:6px solid var(--task)}
+.it:last-child{border-bottom:0}
+.it.bocs{border-left-color:var(--bocs)} .it.mail{border-left-color:var(--mail)}
+.it .nm{flex:1;line-height:1.35;word-break:break-all;min-width:0}
+.it .nm small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.it.isdone .nm .t{text-decoration:line-through;color:var(--muted)}
+.acts{display:flex;gap:5px;flex:none}
+.acts button{border:1px solid var(--line);background:#fff;border-radius:10px;width:40px;height:38px;font-size:16px;padding:0}
+.acts .ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.acts .back{width:auto;padding:0 10px;font-size:13px}
+.chip{font-size:11px;border-radius:10px;padding:1px 7px;white-space:nowrap;font-weight:700;margin-left:4px}
+.c-o{background:#fdecec;color:var(--danger)} .c-t{background:#fff4e0;color:var(--warn)} .c-m{background:#fff8cc;color:#8a7400} .c-r{background:#eef1f6;color:var(--muted)}
+.c-d{background:#e6f5ec;color:var(--ok)} .c-s{background:#eef1f6;color:var(--muted)} .c-p{background:#e3f4f8;color:var(--mail)}
+.tag{font-size:10px;font-weight:700;color:#fff;border-radius:4px;padding:1px 5px;margin-right:4px;vertical-align:1px;background:#6b7385}
+.k-task{background:var(--task)} .k-bocs{background:var(--bocs)} .k-mail{background:var(--mail)}
+.empty{padding:16px;color:var(--muted);text-align:center;font-size:14px}
+.note{margin:12px 12px 0;font-size:12px;color:var(--muted);line-height:1.6}
+.warn{margin:10px;background:#fff4e0;border-left:4px solid var(--warn);padding:8px 10px;border-radius:8px;font-size:13px}
+.login{margin:40px 16px;background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.login input{width:100%;font-size:17px;padding:10px;border:1px solid var(--line);border-radius:8px;margin:10px 0}
+.btn{width:100%;background:var(--brand);color:#fff;border:0;border-radius:10px;padding:12px;font-size:16px;font-weight:700}
+.fab{position:fixed;right:18px;bottom:22px;width:58px;height:58px;border-radius:50%;background:var(--brand);color:#fff;font-size:30px;border:0;box-shadow:0 4px 14px rgba(11,78,162,.4);z-index:6;line-height:1}
+.sheet-bg{position:fixed;inset:0;background:rgba(10,15,30,.45);display:none;z-index:20;align-items:flex-end}
+.sheet-bg.show{display:flex}
+.sheet{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:16px 16px 26px;max-height:92vh;overflow:auto}
+.sheet h3{margin:0 0 12px;font-size:17px}
+.f{margin-bottom:12px}
+.f label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.f input,.f select,.f textarea{width:100%;font-size:16px;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;font-family:inherit}
+.quick{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.quick button{border:1px solid var(--line);background:#fff;border-radius:14px;padding:5px 11px;font-size:13px}
+.row2{display:flex;gap:8px} .row2 .f{flex:1}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#222b3d;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;max-width:90%;z-index:30}
+.toast.show{opacity:1}
+.busy{opacity:.5;pointer-events:none}
+</style></head>
+<body>
+<div id="app"></div>
+<button class="fab" id="fab" hidden>＋</button>
+<div class="sheet-bg" id="sheet"><div class="sheet">
+  <h3>タスクを追加</h3>
+  <div class="f"><label>タスク名</label><input id="aName" maxlength="80" placeholder="例：見積書を送る"></div>
+  <div class="row2"><div class="f"><label>期限</label><input type="date" id="aDate"></div>
+    <div class="f" style="flex:.8"><label>締切時刻</label><select id="aTime"></select></div></div>
+  <div class="quick" id="aQuick" style="margin:-6px 0 12px"></div>
+  <div class="f"><label>種別</label><select id="aCat"></select></div>
+  <div class="f"><label>メモ（任意）</label><textarea id="aMemo" rows="2"></textarea></div>
+  <button class="btn" id="aSave">追加する</button>
+  <button class="btn" id="aCancel" style="background:#fff;color:#1d2433;border:1px solid var(--line);margin-top:8px">やめる</button>
+</div></div>
+<div class="toast" id="toast"></div>
+<script>
+// GASのURLと合言葉は、この端末にだけ記憶する（このファイルには書かない）
+var KEY = '', GAS = '';
+try { KEY = localStorage.getItem('mtKey') || ''; GAS = localStorage.getItem('mtGas') || ''; } catch (e) {}
+(function(){ var q = new URLSearchParams(location.search); if (q.get('k')) KEY = q.get('k'); if (q.get('gas')) GAS = q.get('gas'); })();
+var DATA = null, TAB = 'list', SHOW = {task:true, bocs:true, mail:true}, CAT = '', PMODE = 'kind';
+var WD = ['日','月','火','水','木','金','土'], KN = {task:'月次', bocs:'BOCS', mail:'メール'}, KC = {task:'#2f74d0', bocs:'#8a3ffc', mail:'#0b8fac'};
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function pd(d){ var p = d.split('-'); return new Date(+p[0], +p[1] - 1, +p[2], 12); }
+function ymd(x){ return x.getFullYear() + '-' + ('0' + (x.getMonth() + 1)).slice(-2) + '-' + ('0' + x.getDate()).slice(-2); }
+function addD(d, n){ var x = pd(d); x.setDate(x.getDate() + n); return ymd(x); }
+function md(d){ var x = pd(d); return (x.getMonth() + 1) + '/' + x.getDate() + '(' + WD[x.getDay()] + ')'; }
+function plain(n){ return n.replace(/^BOCS\s?/, '').replace(/^📧/, '').replace(/ \d{1,2}:\d{2}締切$/, ''); }
+function catOf(id){ return (DATA.categories || []).filter(function(c){ return c.id === id; })[0]; }
+function toast(t){ var e = document.getElementById('toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function(){ e.classList.remove('show'); }, 2400); }
+// GASとのやり取り（GET：状況、POST：操作・追加）。POSTは text/plain で送り、事前確認（CORS）を起こさない
+function api(fn, args, ok){
+  var app = document.getElementById('app'); app.classList.add('busy');
+  var req = fn === 'apiStatus'
+    ? fetch(GAS + '?action=status&key=' + encodeURIComponent(args[0]), {cache:'no-store'})
+    : fetch(GAS, {method:'POST', body:JSON.stringify(fn === 'apiAct' ? {key:args[0], action:'act', id:args[1], op:args[2]} : {key:args[0], action:'add', task:args[1]})});
+  req.then(function(r){ return r.json(); })
+    .then(function(res){ app.classList.remove('busy'); ok(res); })
+    .catch(function(err){ app.classList.remove('busy'); toast('通信できませんでした（' + err.message + '）'); if (!DATA) login('GASにつながりません。URLを確かめてください。'); });
+}
+function login(msg){
+  document.getElementById('fab').hidden = true;
+  document.getElementById('app').innerHTML = '<div class="login"><b>月次タスク</b><p style="font-size:13px;color:#6b7385;margin:6px 0 0">PCのツールの「設定」にある「GASのURL」と「GASの合言葉」を入れてください。この端末にだけ記憶します。</p>'
+    + (msg ? '<p style="color:#d33a3a;font-size:13px">' + esc(msg) + '</p>' : '')
+    + '<input id="g" autocomplete="off" autocapitalize="off" inputmode="url" placeholder="GASのURL（https://script.google.com/…/exec）" value="' + esc(GAS) + '">'
+    + '<input id="k" autocomplete="off" autocapitalize="off" placeholder="合言葉（英数字16文字）"><button class="btn" id="go">開く</button></div>';
+  document.getElementById('go').onclick = function(){
+    GAS = document.getElementById('g').value.trim(); KEY = document.getElementById('k').value.replace(/\s/g, '');
+    if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(GAS)){ login('GASのURLは「https://script.google.com/」で始まり「/exec」で終わるものを入れてください。'); return; }
+    load();
+  };
+}
+function logout(){ if (!confirm('この端末に記憶したGASのURLと合言葉を消しますか？')) return; try { localStorage.removeItem('mtKey'); localStorage.removeItem('mtGas'); } catch (e) {} KEY = ''; GAS = ''; DATA = null; login(''); }
+function load(){
+  if (!KEY || !GAS) { login(''); return; }
+  api('apiStatus', [KEY], function(res){
+    if (!res.ok) { try { localStorage.removeItem('mtKey'); } catch (e) {} KEY = ''; login(res.error); return; }
+    try { localStorage.setItem('mtKey', KEY); localStorage.setItem('mtGas', GAS); } catch (e) {}
+    if (location.search) history.replaceState(null, '', location.pathname); // URLに合言葉を残さない
+    DATA = res; render();
+  });
+}
+function stChip(i){
+  if (i.st === 'done') return '<span class="chip c-d">完了</span>';
+  if (i.st === 'skip') return '<span class="chip c-s">スキップ</span>';
+  var d = Math.round((pd(i.due) - pd(DATA.today)) / 864e5), tm = i.time ? ' ' + i.time : '';
+  if (d < 0) return '<span class="chip c-o">' + (-d) + '日超過</span>';
+  if (d === 0) return '<span class="chip c-t">今日' + tm + '</span>';
+  if (d === 1) return '<span class="chip c-m">明日' + tm + '</span>';
+  return '<span class="chip c-r">あと' + d + '日</span>';
+}
+function itemHtml(i){
+  var c = catOf(i.cat), open = i.st === 'open';
+  var acts = open
+    ? '<button class="ok" data-act="done" data-id="' + esc(i.id) + '" title="完了">✓</button><button data-act="skip" data-id="' + esc(i.id) + '" title="今回はスキップ">⏭</button>'
+    : '<button class="back" data-act="reopen" data-id="' + esc(i.id) + '">↩ 戻す</button>';
+  return '<div class="it ' + i.kind + (open ? '' : ' isdone') + '"><span class="nm"><span class="t"><span class="tag k-' + i.kind + '">' + KN[i.kind] + '</span>'
+    + (c ? '<span class="tag" style="background:' + esc(c.color) + '">' + esc(c.name) + '</span>' : '') + esc(plain(i.name)) + '</span>'
+    + '<small>' + md(i.due) + (i.time ? ' ' + i.time + 'まで' : '') + stChip(i) + (i.pending ? '<span class="chip c-p">📱PC未反映</span>' : '') + '</small></span>'
+    + '<span class="acts">' + acts + '</span></div>';
+}
+function barHtml(done, skip, total){
+  var dp = total ? done / total * 100 : 0, sp = total ? skip / total * 100 : 0;
+  return '<div class="bar"><i class="d" style="width:' + dp + '%"></i><i class="s" style="width:' + sp + '%"></i></div>';
+}
+function render(){
+  var a = DATA, app = document.getElementById('app');
+  if (a.empty){ app.innerHTML = '<header><h1>月次タスク</h1></header><div class="empty">まだタスクの情報が届いていません。PCのツールで「GASのURL」と合言葉を設定してください。</div>'; return; }
+  document.getElementById('fab').hidden = false;
+  var ym = a.today.slice(0, 7);
+  function pass(i){ return SHOW[i.kind] && (!CAT || (CAT === '-' ? !i.cat : i.cat === CAT)); }
+  var items = a.items.filter(pass);
+  var open = items.filter(function(i){ return i.st === 'open'; });
+  var list = open.filter(function(i){ return i.inList; });
+  // 今月の進捗（区分・種別の絞り込みは使わず全体で）
+  var mon = a.items.filter(function(i){ return i.due.slice(0, 7) === ym; });
+  function cnt(xs){ var d = 0, s = 0; xs.forEach(function(i){ if (i.st === 'done') d++; else if (i.st === 'skip') s++; }); return {d:d, s:s, t:xs.length}; }
+  var all = cnt(mon), pct = all.t ? Math.round((all.d + all.s) / all.t * 100) : 0;
+  var groups = PMODE === 'kind'
+    ? ['task','bocs','mail'].map(function(k){ return {nm:KN[k], color:KC[k], c:cnt(mon.filter(function(i){ return i.kind === k; }))}; })
+    : (a.categories || []).map(function(c){ return {nm:c.name, color:c.color, c:cnt(mon.filter(function(i){ return i.cat === c.id; }))}; })
+        .concat([{nm:'種別なし', color:'#a8b3c7', c:cnt(mon.filter(function(i){ return !i.cat; }))}]);
+  groups = groups.filter(function(g){ return g.c.t; });
+  var saved = a.savedAt ? new Date(a.savedAt) : null;
+  var h = '<header><h1>月次タスク<button id="rf">更新</button></h1><div class="sub">' + esc(a.name) + '・' + md(a.today) + ' 現在'
+    + (saved ? '・PCの最終保存 ' + (saved.getMonth() + 1) + '/' + saved.getDate() + ' ' + ('0' + saved.getHours()).slice(-2) + ':' + ('0' + saved.getMinutes()).slice(-2) : '')
+    + (a.unsynced ? '・PC未反映の操作 ' + a.unsynced + '件' : '') + '</div></header>';
+  h += '<div class="card"><div class="prog-top"><b>' + pct + '%</b><span>' + (+ym.slice(5)) + '月の進捗　' + (all.d + all.s) + ' / ' + all.t + '件</span>'
+    + '<div class="sw"><button data-pm="kind" class="' + (PMODE === 'kind' ? 'on' : '') + '">区分別</button><button data-pm="cat" class="' + (PMODE === 'cat' ? 'on' : '') + '">種別別</button></div></div>'
+    + barHtml(all.d, all.s, all.t)
+    + '<div class="legend"><span><i style="background:var(--ok)"></i>完了 ' + all.d + '</span><span><i style="background:#a8b3c7"></i>スキップ ' + all.s + '</span><span><i style="background:#eef1f6"></i>残り ' + (all.t - all.d - all.s) + '</span></div>'
+    + '<div class="rows">' + groups.map(function(g){ return '<div class="prow"><span class="nm" style="color:' + esc(g.color) + '">' + esc(g.nm) + '</span>' + barHtml(g.c.d, g.c.s, g.c.t) + '<span class="n">' + (g.c.d + g.c.s) + '/' + g.c.t + '</span></div>'; }).join('') + '</div></div>';
+  var cntL = {o:0, t:0, m:0, r:0};
+  list.forEach(function(i){ if (i.due < a.today) cntL.o++; else if (i.due === a.today) cntL.t++; else if (i.due === a.tmr) cntL.m++; else cntL.r++; });
+  h += '<div class="sum"><div class="o"><b>' + cntL.o + '</b><span>超過</span></div><div class="t"><b>' + cntL.t + '</b><span>今日</span></div><div class="m"><b>' + cntL.m + '</b><span>明日</span></div><div class="r"><b>' + cntL.r + '</b><span>' + (a.windowDays ? a.windowDays + '日先まで' : '今月末まで') + '</span></div></div>';
+  var doneList = items.filter(function(i){ return i.st !== 'open'; }).sort(function(x, y){ return x.due < y.due ? 1 : -1; });
+  var tabs = [['list', '今の一覧', list.length], ['month', '今月', items.filter(function(i){ return i.due.slice(0, 7) === ym; }).length], ['future', '先の分', open.filter(function(i){ return i.due.slice(0, 7) > ym; }).length], ['done', '完了済み', doneList.length]];
+  h += '<div class="tabs">' + tabs.map(function(t){ return '<button data-tab="' + t[0] + '" class="' + (TAB === t[0] ? 'on' : '') + '">' + t[1] + '（' + t[2] + '）</button>'; }).join('') + '</div>';
+  h += '<div class="filters">' + ['task','bocs','mail'].map(function(k){ return '<label><input type="checkbox" data-show="' + k + '" ' + (SHOW[k] ? 'checked' : '') + '>' + KN[k] + '</label>'; }).join('')
+    + '<select id="catSel"><option value="">種別：すべて</option>' + (a.categories || []).map(function(c){ return '<option value="' + esc(c.id) + '"' + (CAT === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('') + '<option value="-"' + (CAT === '-' ? ' selected' : '') + '>種別なし</option></select></div>';
+  function sec(title, xs){ return xs.length ? '<div class="sec"><h2><span>' + title + '</span><span>' + xs.length + '件</span></h2>' + xs.map(itemHtml).join('') + '</div>' : ''; }
+  var body = '';
+  if (TAB === 'list'){
+    body += sec('⚠️ 期日超過', list.filter(function(i){ return i.due < a.today; })) + sec('🔴 今日', list.filter(function(i){ return i.due === a.today; }))
+      + sec('🟡 明日', list.filter(function(i){ return i.due === a.tmr; })) + sec('📋 それ以降', list.filter(function(i){ return i.due > a.tmr; }));
+  } else if (TAB === 'month'){
+    var mi = items.filter(function(i){ return i.due.slice(0, 7) === ym; });
+    body += sec('残り', mi.filter(function(i){ return i.st === 'open'; })) + sec('完了・スキップ', mi.filter(function(i){ return i.st !== 'open'; }));
+  } else if (TAB === 'future'){
+    var byM = {};
+    open.filter(function(i){ return i.due.slice(0, 7) > ym; }).forEach(function(i){ var m = i.due.slice(0, 7); (byM[m] = byM[m] || []).push(i); });
+    Object.keys(byM).sort().forEach(function(m){ body += sec((+m.slice(0, 4)) + '年' + (+m.slice(5)) + '月', byM[m]); });
+  } else {
+    body += sec('完了・スキップ（先月と今月）', doneList);
+  }
+  h += body || '<div class="sec"><div class="empty">' + (TAB === 'done' ? 'まだありません' : '残りタスクはありません 🎉') + '</div></div>';
+  if (a.horizon && a.horizon < a.today) h += '<div class="warn">PCのツールをしばらく開いていないようです。会社PCで一度ツールを開くと最新になります。</div>';
+  h += '<div class="note"><a href="#" id="lo" style="color:#6b7385">この端末の設定を消す</a><br>・✓で完了、⏭でその回だけスキップ、↩で元に戻せます。<br>・右下の「＋」で一般タスクを追加できます。<br>・ここでの操作と追加は、次にPCのツールを開いたときに取り込まれます。毎月のタスクや種別の管理はPCのツールで行います。</div>';
+  app.innerHTML = h;
+}
+function act(id, op){
+  var it = DATA.items.filter(function(i){ return i.id === id; })[0];
+  if (op === 'skip' && !confirm('「' + (it ? plain(it.name) : '') + '」を今回はスキップしますか？')) return;
+  api('apiAct', [KEY, id, op], function(res){
+    if (!res.ok){ toast(res.error); load(); return; }
+    DATA = res; render();
+    toast('「' + (it ? plain(it.name).slice(0, 16) : '') + '」を' + {done:'完了にしました', skip:'スキップにしました', reopen:'元に戻しました'}[op]);
+  });
+}
+// 追加シート
+function openSheet(){
+  var a = DATA;
+  document.getElementById('aName').value = ''; document.getElementById('aMemo').value = '';
+  document.getElementById('aDate').value = a.today;
+  var o = '<option value="">なし</option>'; for (var n = 0; n < 96; n++){ var t = ('0' + Math.floor(n / 4)).slice(-2) + ':' + ('0' + n % 4 * 15).slice(-2); o += '<option>' + t + '</option>'; }
+  document.getElementById('aTime').innerHTML = o;
+  document.getElementById('aCat').innerHTML = '<option value="">（種別なし）</option>' + (a.categories || []).map(function(c){ return '<option value="' + esc(c.id) + '"' + (CAT && CAT === c.id ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('');
+  var t0 = pd(a.today), fri = addD(a.today, (5 - t0.getDay() + 7) % 7 || 7), mon = addD(a.today, (8 - t0.getDay()) % 7 || 7);
+  var q = [['今日', a.today], ['明日', a.tmr], ['金曜', fri], ['来週月曜', mon], ['月末', a.monthEnd]];
+  document.getElementById('aQuick').innerHTML = q.map(function(x){ return '<button data-d="' + x[1] + '">' + x[0] + '</button>'; }).join('');
+  document.getElementById('sheet').classList.add('show');
+  setTimeout(function(){ document.getElementById('aName').focus(); }, 100);
+}
+document.getElementById('fab').onclick = openSheet;
+document.getElementById('aCancel').onclick = function(){ document.getElementById('sheet').classList.remove('show'); };
+document.getElementById('sheet').addEventListener('click', function(e){ if (e.target.id === 'sheet') e.target.classList.remove('show'); if (e.target.dataset.d) document.getElementById('aDate').value = e.target.dataset.d; });
+document.getElementById('aSave').onclick = function(){
+  var t = {name:document.getElementById('aName').value.trim(), date:document.getElementById('aDate').value, time:document.getElementById('aTime').value, cat:document.getElementById('aCat').value, memo:document.getElementById('aMemo').value.trim()};
+  if (!t.name){ toast('タスク名を入れてください'); return; }
+  if (!t.date){ toast('期限を入れてください'); return; }
+  api('apiAdd', [KEY, t], function(res){
+    if (!res.ok){ toast(res.error); return; }
+    document.getElementById('sheet').classList.remove('show');
+    DATA = res; render(); toast('「' + t.name.slice(0, 16) + '」を追加しました');
+  });
+};
+document.addEventListener('click', function(e){
+  if (e.target.id === 'lo'){ e.preventDefault(); logout(); return; }
+  var t = e.target.closest ? e.target.closest('button') : null; if (!t) return;
+  if (t.id === 'rf'){ load(); return; }
+  if (t.dataset.tab){ TAB = t.dataset.tab; render(); return; }
+  if (t.dataset.pm){ PMODE = t.dataset.pm; render(); return; }
+  if (t.dataset.act){ act(t.dataset.id, t.dataset.act); }
+});
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if (t.dataset && t.dataset.show){ SHOW[t.dataset.show] = t.checked; render(); return; }
+  if (t.id === 'catSel'){ CAT = t.value; render(); }
+});
+load();
+</script>
+</body></html>
